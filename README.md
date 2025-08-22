@@ -36,6 +36,4 @@ It provides authentication, admin-protected room management, and email-based con
 - **Email:** Nodemailer (Gmail service)
 - **Frontend:** HTML, CSS, JavaScript
 
----
 
-## 📂 Project Structure
