@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin Login - RoomWala</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body class="center">
+  <div class="card login-card">
+    <h1>Admin Login</h1>
+    <form method="POST" action="/auth/login">
+      <input name="username" placeholder="Username" required />
+      <input name="password" type="password" placeholder="Password" required />
+      <button type="submit">Login</button>
+    </form>
+    <p class="muted">Credentials come from <code>.env</code>.</p>
+  </div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - Add BGMI Room</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <strong>RoomWala Admin</strong>
+    <div>
+      <form method="GET" action="/auth/logout" style="display:inline">
+        <button type="submit" style="background:#f05454">Logout</button>
+      </form>
+    </div>
+  </header>
+  <div class="wrap">
+    <div class="card">
+      <h2>Add BGMI Room</h2>
+      <form method="POST" action="/admin/add-room">
+        <div class="row">
+          <div><label>Room ID</label><input name="roomId" placeholder="e.g., 3" required /></div>
+          <div><label>Room Name</label><input name="roomName" placeholder="e.g., squadwar" required /></div>
+        </div>
+        <div class="row">
+          <div><label>Map</label><input name="map" placeholder="e.g., Sanhok" required /></div>
+          <div>
+            <label>Match Type</label>
+            <select name="matchType" required>
+              <option value="">Select</option>
+              <option value="solo">Solo</option>
+              <option value="duo">Duo</option>
+              <option value="squad">Squad</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div><label>Entry Fee</label><input type="number" name="entryFee" placeholder="e.g., 100" required /></div>
+          <div><label>Start Time</label><input type="datetime-local" name="startTime" required /></div>
+        </div>
+        <label>Description</label>
+        <textarea name="description" placeholder="Sanhok jungle squad war!" required></textarea>
+        <label>Image URL</label>
+        <input type="url" name="image" placeholder="/images/bgmi.jpg" required />
+        <button type="submit">Create Room</button>
+        <div class="msg" id="msg"></div>
+        <p class="muted">All fields required. Saved to <code>roomwala.rooms</code>.</p>
+      </form>
+    </div>
+  </div>
+</body>
+</html>
