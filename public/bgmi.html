@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>BGMI Rooms | Room Wala</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body>
+  <nav class="navbar">
+    <div class="nav-left">
+      <a href="/admin.html">Home</a>
+    </div>
+    <div class="nav-center">
+      <input type="text" id="searchRooms" placeholder="Search rooms by name or map..." />
+    </div>
+    <div class="nav-right">
+      <div class="balance" id="balance">₹ 1,250</div>
+      <div class="profile">
+        <button class="profile-btn" id="profileBtn">Profile ⬇</button>
+        <div class="dropdown" id="dropdown">
+          <a href="#">My Account</a>
+          <a href="#">Help?</a>
+          <a href="/auth/logout">Logout</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <h2 style="margin-bottom:12px;">BGMI Rooms</h2>
+    <div id="roomList" class="room-list"></div>
+  </div>
+
+  <!-- Join Modal -->
+  <div id="joinModal" class="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title">Join Room</div>
+        <button class="close" onclick="closeModal()">×</button>
+      </div>
+      <form id="joinForm">
+        <input type="hidden" id="roomIdField" />
+        <div class="form-group">
+          <label>Leader BGMI ID</label>
+          <input type="text" id="leaderBgmiId" required />
+        </div>
+        <div class="form-group">
+          <label>Leader BGMI Username</label>
+          <input type="text" id="leaderBgmiUsername" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Leader Email</label>
+            <input type="email" id="leaderEmail" required />
+          </div>
+          <div class="form-group">
+            <label>Leader Mobile</label>
+            <input type="tel" id="leaderMobile" />
+          </div>
+        </div>
+
+        <div id="teammatesArea"></div>
+
+        <button class="btn btn-primary btn-block" type="submit">Confirm Join</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/main.js"></script>
+  <script>
+    let rooms = [];
+    let currentRoom = null;
+
+    function toggleDropdown(e){
+      const dropdown = document.getElementById('dropdown');
+      dropdown.classList.toggle('show');
+    }
+    document.getElementById('profileBtn').addEventListener('click', toggleDropdown);
+    window.addEventListener('click', (e)=>{
+      if (!e.target.closest('.profile')) {
+        document.getElementById('dropdown').classList.remove('show');
+      }
+    });
+
+    function roomCard(r){
+      return `
+      <div class="room-card">
+        <img src="${r.image || '/images/bgmi.jpg'}" onerror="this.src='/images/loginback.jpg'" alt="${r.roomName}">
+        <div class="room-info">
+          <div>
+            <div class="room-title">${r.roomName}</div>
+            <div class="room-meta">
+              <span class="badge">${r.map}</span>
+              <span class="badge">${r.matchType.toUpperCase()}</span>
+              <span class="badge">₹${r.entryFee}</span>
+              <span class="badge">${new Date(r.startTime).toLocaleString()}</span>
+              <span class="badge">Joined: ${r.playersJoined}</span>
+            </div>
+            <details class="details">
+              <summary>See details</summary>
+              <div>${(r.description||'').replace(/\n/g,'<br>')}</div>
+            </details>
+          </div>
+          <div class="room-actions">
+            <button class="btn btn-outline" onclick="openJoin('${r.roomId}')">Join Room</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    async function loadRooms(){
+      const res = await fetch('/api/rooms?game=bgmi');
+      rooms = await res.json();
+      renderRooms();
+    }
+    function renderRooms(){
+      const q = (document.getElementById('searchRooms').value || '').toLowerCase();
+      const list = rooms.filter(r => 
+        r.roomName.toLowerCase().includes(q) || r.map.toLowerCase().includes(q)
+      ).map(roomCard).join('');
+      document.getElementById('roomList').innerHTML = list || '<p>No rooms yet. Add some in DB.</p>';
+    }
+    document.getElementById('searchRooms').addEventListener('input', renderRooms);
+
+    function openJoin(roomId){
+      currentRoom = rooms.find(r => r.roomId === roomId);
+      if(!currentRoom) return;
+      document.getElementById('roomIdField').value = roomId;
+      // build teammate inputs depending on matchType
+      const area = document.getElementById('teammatesArea');
+      area.innerHTML = '';
+      let count = currentRoom.matchType === 'squad' ? 3 : currentRoom.matchType === 'duo' ? 1 : 0;
+      for (let i=1;i<=count;i++){
+        const block = document.createElement('div');
+        block.className = 'form-row';
+        block.innerHTML = `
+          <div class="form-group">
+            <label>Teammate ${i} BGMI ID</label>
+            <input type="text" class="tm-id" />
+          </div>
+          <div class="form-group">
+            <label>Teammate ${i} Username</label>
+            <input type="text" class="tm-username" />
+          </div>`;
+        area.appendChild(block);
+      }
+      document.getElementById('joinModal').classList.add('show');
+    }
+    function closeModal(){
+      document.getElementById('joinModal').classList.remove('show');
+      document.getElementById('joinForm').reset();
+      document.getElementById('teammatesArea').innerHTML='';
+    }
+
+    document.getElementById('joinForm').addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      if(!currentRoom) return;
+      const leader = {
+        bgmiId: document.getElementById('leaderBgmiId').value.trim(),
+        bgmiUsername: document.getElementById('leaderBgmiUsername').value.trim(),
+        email: document.getElementById('leaderEmail').value.trim(),
+        mobile: document.getElementById('leaderMobile').value.trim()
+      };
+      const tms = [];
+      document.querySelectorAll('.tm-id').forEach((el, idx)=>{
+        const id = el.value.trim();
+        const uname = document.querySelectorAll('.tm-username')[idx].value.trim();
+        if (id || uname) tms.push({ role:'teammate', bgmiId:id, bgmiUsername:uname });
+      });
+
+      const res = await fetch(`/api/join/${currentRoom.roomId}/join`, {
+        method:'POST',
+        headers: { "Content-Type":"application/json" },
+        body: JSON.stringify({ leader: { role:'leader', ...leader }, teammates: tms })
+      });
+      if(res.ok){
+        alert("Joined successfully!");
+        closeModal();
+        await loadRooms(); // refresh joined count
+      } else {
+        const txt = await res.text();
+        alert(txt || "Failed to join");
+      }
+    });
+
+    loadRooms();
+  </script>
+</body>
+</html>

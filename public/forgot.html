@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Forgot Password | Room Wala</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="/css/main.css" />
+</head>
+<body class="login-body">
+  <div class="login-container">
+    <form class="login-form" action="/auth/forgot" method="POST">
+      <h2 class="login-title">Reset Password</h2>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input type="email" id="email" name="email" class="form-input" required />
+      </div>
+
+      <button type="submit" class="login-btn">Send Reset Link</button>
+
+      <div class="extra-links">
+        <a href="/login.html" class="link">Back to Login</a>
+      </div>
+    </form>
+  </div>
+</body>
+</html>
